@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	p "github.com/Pencroff/ccid_go/pkg"
 	"io"
+	"sync"
 	"time"
 )
 
@@ -120,6 +121,30 @@ func newCcIdGenWithClock(size byte, fingerprint []byte, rndRd io.Reader, s p.CcI
 		lastTimestamp: 0,
 		lastPayload:   make([]byte, payloadSize),
 	}, nil
+}
+
+type CcIdGenImplementationLocked struct {
+	gen CcIdGen
+	m   sync.Mutex
+}
+
+func (g *CcIdGenImplementationLocked) Next() (p.CcId, error) {
+	g.m.Lock()
+	defer g.m.Unlock()
+	return g.gen.Next()
+}
+
+func (g *CcIdGenImplementationLocked) NextWithTime(t time.Time) (p.CcId, error) {
+	g.m.Lock()
+	defer g.m.Unlock()
+	return g.gen.NextWithTime(t)
+}
+
+// NewCcIdGenLocked creates a new CcId Generator (no fingerprint, no monotonic strategy).
+// 'size' must be the size of the CcId in bytes.
+// 'rndRd' must be a reader for providing random bytes.
+func NewCcIdGenLocked(g CcIdGen) CcIdGen {
+	return &CcIdGenImplementationLocked{gen: g}
 }
 
 // FromString creates a CcId from a string. It requires the fingerprint size and the base of the string.
