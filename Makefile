@@ -7,6 +7,10 @@ testAll:
 	@echo "Running all tests..."
 	go test -cover ./...
 
+testRace:
+	@echo "Running tests races..."
+	go test -race ./...
+
 
 # Requires godoc to be installed - `go install golang.org/x/tools/cmd/godoc@latest`
 

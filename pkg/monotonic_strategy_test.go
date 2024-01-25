@@ -60,6 +60,22 @@ func (m *mockReader) Read(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+type mockReaderSlice struct {
+	Val []byte
+	idx int
+}
+
+func (m *mockReaderSlice) Read(p []byte) (n int, err error) {
+	for i := range p {
+		p[i] = m.Val[m.idx]
+		m.idx += 1
+		if m.idx >= len(m.Val) {
+			m.idx = 0
+		}
+	}
+	return len(p), nil
+}
+
 func TestFiftyPercentMonotonicStrategy_Mutate(t *testing.T) {
 	var testCaseFiftyPercentMonotonicStrategy = map[string]MonotonicStrategyTestCase{
 		"regular odd": {
@@ -95,5 +111,27 @@ func TestFiftyPercentMonotonicStrategy_Mutate(t *testing.T) {
 				t.Errorf("s.Mutate(%v) =\n%v, %d; want\n%v, %d", tc.in, output, carryOut, tc.out, tc.carry)
 			}
 		})
+	}
+}
+
+func TestFiftyPercentMonotonicStrategy_MutateWithZeroSequence(t *testing.T) {
+	in := []byte{0x01, 0x01, 0x01, 0x01}
+	out := []byte{0x01, 0x01, 0x02, 0x02}
+	rd := mockReaderSlice{[]byte{0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01}, 0}
+	s := NewFiftyPercentMonotonicStrategy(&rd)
+	output, carryOut := s.Mutate(in)
+	if !bytes.Equal(output, out) || carryOut != 0 {
+		t.Errorf("s.Mutate(%v) =\n%v, %d; want\n%v, %d", in, output, carryOut, out, 0)
+	}
+}
+
+func TestFiftyPercentMonotonicStrategy_MutateWithZeroSequenceOdd(t *testing.T) {
+	in := []byte{0x01, 0x01, 0x01}
+	out := []byte{0x01, 0x02, 0x02}
+	rd := mockReaderSlice{[]byte{0x10, 0x00, 0x01, 0x01, 0x01, 0x01}, 0}
+	s := NewFiftyPercentMonotonicStrategy(&rd)
+	output, carryOut := s.Mutate(in)
+	if !bytes.Equal(output, out) || carryOut != 0 {
+		t.Errorf("s.Mutate(%v) =\n%v, %d; want\n%v, %d", in, output, carryOut, out, 0)
 	}
 }

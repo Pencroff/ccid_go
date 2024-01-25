@@ -400,3 +400,58 @@ func TestMonotonicRandCcIdGen(t *testing.T) {
 		})
 	}
 }
+
+func TestMonotonicRandCcIdGen_LargeCycle(t *testing.T) {
+	sizes := []byte{
+		p.ByteSliceSize64,
+		p.ByteSliceSize96,
+		p.ByteSliceSize128,
+		p.ByteSliceSize160,
+	}
+	fingerPrints := [][]byte{
+		make([]byte, 1),
+		make([]byte, 5),
+		make([]byte, 5),
+		make([]byte, 5),
+	}
+	for idx, size := range sizes {
+		t.Run(fmt.Sprintf("size_%d", size), func(t *testing.T) {
+			r, _ := e.NewHybridRandReader()
+			s := p.NewFiftyPercentMonotonicStrategy(r)
+			gen, _ := NewMonotonicCcIdGen(size, r, s) // Used real clock under the hood
+			t.Run("Next", func(t *testing.T) {
+				prev, _ := gen.Next()
+				for i := 0; i < 1_000_000; i++ {
+					next, _ := gen.Next()
+					if bytes.Compare(prev.Bytes(), next.Bytes()) >= 0 {
+						t.Errorf("%d - Not monotonic.\nPrev: %x\nmore then\nNext: %x", i, prev.Bytes(), next.Bytes())
+						t.Errorf("Details:\nPrev: %p - %#v\nNext: %p - %#v", &prev, prev, &next, next)
+					}
+					if bytes.Compare(prev.Bytes()[:4], next.Bytes()[:4]) > 0 {
+						t.Errorf("%d - Time decreased. Now: %s.\nPrev: %#v\nNext: %#v", i, time.Now().Format(time.RFC3339), prev, next)
+					}
+					prev = next
+				}
+			})
+		})
+		t.Run(fmt.Sprintf("size_%d_with_fingerprint", size), func(t *testing.T) {
+			r, _ := e.NewHybridRandReader()
+			s := p.NewFiftyPercentMonotonicStrategy(r)
+			gen, _ := NewMonotonicCcIdGenWithFingerprint(size, fingerPrints[idx], r, s) // Used real clock under the hood
+			t.Run("Next", func(t *testing.T) {
+				prev, _ := gen.Next()
+				for i := 0; i < 1_000_000; i++ {
+					next, _ := gen.Next()
+					if bytes.Compare(prev.Bytes(), next.Bytes()) >= 0 {
+						t.Errorf("%d - Not monotonic.\nPrev: %x\nmore then\nNext: %x", i, prev.Bytes(), next.Bytes())
+						t.Errorf("Details:\nPrev: %p - %#v\nNext: %p - %#v", &prev, prev, &next, next)
+					}
+					if bytes.Compare(prev.Bytes()[:4], next.Bytes()[:4]) > 0 {
+						t.Errorf("%d - Time decreased. Now: %s.\nPrev: %#v\nNext: %#v", i, time.Now().Format(time.RFC3339), prev, next)
+					}
+					prev = next
+				}
+			})
+		})
+	}
+}

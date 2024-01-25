@@ -42,6 +42,7 @@ func (s *FiftyPercentMonotonicStrategy) Mutate(v []byte) (res []byte, carry byte
 		size += 1
 	}
 	rndData := make([]byte, size)
+fillWithRandom:
 	_, err := s.rd.Read(rndData)
 	// if no data read, return 1 as carry to trigger next time tick
 	if err != nil {
@@ -52,6 +53,9 @@ func (s *FiftyPercentMonotonicStrategy) Mutate(v []byte) (res []byte, carry byte
 	if isOdd {
 		rndData[0] &= 0x0F
 	}
+	if isZeroFilled(rndData) {
+		goto fillWithRandom
+	}
 	res, carry = Add8BigEndian(v, rndData, 0)
 	return
 }
@@ -60,4 +64,13 @@ func (s *FiftyPercentMonotonicStrategy) Mutate(v []byte) (res []byte, carry byte
 // It will use the given io.Reader to generate random bytes
 func NewFiftyPercentMonotonicStrategy(rd io.Reader) CcIdMonotonicStrategy {
 	return &FiftyPercentMonotonicStrategy{rd}
+}
+
+func isZeroFilled(b []byte) bool {
+	for _, v := range b {
+		if v != 0 {
+			return false
+		}
+	}
+	return true
 }
