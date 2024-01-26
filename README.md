@@ -1,8 +1,12 @@
 # ccid_go
 
+![poster](./assets/logo.min.png)
+
 CCID Go lang implementation
 
-[Reference](https://github.com/Pencroff/ccid)
+* [CCID Concept](https://github.com/Pencroff/ccid)
+* [The Art of Generating IDs](https://pencroff.com/post/the-art-of-generating-ids/)
+* [CCID Go lang guide](https://pencroff.com/post/ccid-go/)
 
 
 ## How to install
