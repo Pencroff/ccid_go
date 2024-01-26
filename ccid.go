@@ -140,9 +140,8 @@ func (g *CcIdGenImplementationLocked) NextWithTime(t time.Time) (p.CcId, error) 
 	return g.gen.NextWithTime(t)
 }
 
-// NewCcIdGenLocked creates a new CcId Generator (no fingerprint, no monotonic strategy).
-// 'size' must be the size of the CcId in bytes.
-// 'rndRd' must be a reader for providing random bytes.
+// NewCcIdGenLocked wraps a CcIdGen with a mutex. It's useful for making a CcIdGen thread-safe.
+// 'g' must be a CcIdGen.
 func NewCcIdGenLocked(g CcIdGen) CcIdGen {
 	return &CcIdGenImplementationLocked{gen: g}
 }
