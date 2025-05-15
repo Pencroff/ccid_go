@@ -1,14 +1,6 @@
-# github.com/Pencroff/fluky v0.3.0
-## explicit; go 1.17
-github.com/Pencroff/fluky/source
-# github.com/Pencroff/go-toolkit v0.0.6
-## explicit; go 1.15
-github.com/Pencroff/go-toolkit/extended_type
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/kr/text v0.2.0
-## explicit
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib

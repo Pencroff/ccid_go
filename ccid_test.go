@@ -416,7 +416,7 @@ func TestMonotonicRandCcIdGen_LargeCycle(t *testing.T) {
 	}
 	for idx, size := range sizes {
 		t.Run(fmt.Sprintf("size_%d", size), func(t *testing.T) {
-			r, _ := e.NewHybridRandReader()
+			r, _ := e.NewHybridRandReader(NewSplitMix64(123))
 			s := p.NewFiftyPercentMonotonicStrategy(r)
 			gen, _ := NewMonotonicCcIdGen(size, r, s) // Used real clock under the hood
 			t.Run("Next", func(t *testing.T) {
@@ -435,7 +435,7 @@ func TestMonotonicRandCcIdGen_LargeCycle(t *testing.T) {
 			})
 		})
 		t.Run(fmt.Sprintf("size_%d_with_fingerprint", size), func(t *testing.T) {
-			r, _ := e.NewHybridRandReader()
+			r, _ := e.NewHybridRandReader(NewSplitMix64(123))
 			s := p.NewFiftyPercentMonotonicStrategy(r)
 			gen, _ := NewMonotonicCcIdGenWithFingerprint(size, fingerPrints[idx], r, s) // Used real clock under the hood
 			t.Run("Next", func(t *testing.T) {

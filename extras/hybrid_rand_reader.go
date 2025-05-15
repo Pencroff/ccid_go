@@ -3,7 +3,6 @@ package extras
 import (
 	crand "crypto/rand"
 	"encoding/binary"
-	"github.com/Pencroff/fluky/source"
 	"io"
 	r "math/rand"
 )
@@ -60,26 +59,19 @@ func (r *HybridRandReader) Read(b []byte) (n int, err error) {
 	return n, nil
 }
 
-// NewHybridRandReader creates a new HybridRandReader
-// It will use the Xoshiro256pp source and generate 16k batches of random bytes.
-func NewHybridRandReader() (io.Reader, error) {
-	seed, err := readSeed()
-	if err != nil {
-		return nil, err
-	}
-	size := uint64(SIZE_16k)
-	return NewHybridRandReaderWithSizeAndSource(size, source.NewXoshiro256ppSource(seed))
+// NewHybridRandReader creates a new HybridRandReader with default batch size of 16k and provided source
+func NewHybridRandReader(source64 r.Source64) (io.Reader, error) {
+	return NewHybridRandReaderWithSizeAndSource(SIZE_16k, source64)
 }
 
-// NewHybridRandReaderWithSize creates a new HybridRandReader with given batch size
-// It will use the Xoshiro256pp source.
-// 'size' of non-cryptographically secure random bytes batch. If size is 0, it will use 16k batch size.
-func NewHybridRandReaderWithSize(size uint64) (io.Reader, error) {
+// NewHybridRandReaderWithSourceFunc creates a new HybridRandReader with default batch size of 16k and source creation function
+// 'sourceFunc' is a function that takes a seed and returns a Source64
+func NewHybridRandReaderWithSourceFunc(sourceFunc func(int64) r.Source64) (io.Reader, error) {
 	seed, err := readSeed()
 	if err != nil {
 		return nil, err
 	}
-	return NewHybridRandReaderWithSizeAndSource(size, source.NewXoshiro256ppSource(seed))
+	return NewHybridRandReaderWithSizeAndSource(SIZE_16k, sourceFunc(seed))
 }
 
 // NewHybridRandReaderWithSizeAndSource creates a new HybridRandReader with given batch size and source
